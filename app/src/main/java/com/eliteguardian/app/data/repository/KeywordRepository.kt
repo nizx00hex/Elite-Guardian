@@ -17,13 +17,16 @@ class KeywordRepository(
     private val database = AppDatabase.getInstance(context)
     private val dao = database.keywordDao()
 
-    val activeKeywordSet = CopyOnWriteArraySet<String>()
-
     private val defaultSeedKeywords = listOf(
         "porn", "xxx", "hentai", "sex", "nude", "erotic", "nsfw",
         "xvideos", "xnxx", "redtube", "youporn", "chaturbate",
         "onlyfans", "camsoda", "erome", "fapello", "cam4", "pornhub"
     )
+
+    // Preload default seed keywords synchronously into memory
+    val activeKeywordSet = CopyOnWriteArraySet<String>().apply {
+        addAll(defaultSeedKeywords)
+    }
 
     init {
         scope.launch {
@@ -32,6 +35,7 @@ class KeywordRepository(
             }
             dao.getActiveKeywords().distinctUntilChanged().collect { keywords ->
                 activeKeywordSet.clear()
+                activeKeywordSet.addAll(defaultSeedKeywords)
                 keywords.forEach { activeKeywordSet.add(it.lowercase().trim()) }
             }
         }
@@ -59,7 +63,6 @@ class KeywordRepository(
     fun containsRestrictedKeyword(text: String): String? {
         val lower = text.lowercase()
         for (kw in activeKeywordSet) {
-            // Check word boundary or substring match
             if (lower.contains(kw)) {
                 return kw
             }
@@ -80,4 +83,3 @@ class KeywordRepository(
         }
     }
 }
-

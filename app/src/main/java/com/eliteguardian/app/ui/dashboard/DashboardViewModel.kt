@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.eliteguardian.app.EliteGuardianApp
+import com.eliteguardian.app.accessibility.AccessibilityUtils
 import com.eliteguardian.app.data.preferences.AppPreferences
 import com.eliteguardian.app.data.repository.FilterRepository
 import com.eliteguardian.app.vpn.GuardianVpnService
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.InetAddress
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -31,16 +31,27 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     val isFocusModeActive = appPreferences.isFocusModeActive
     val isProtectionEnabled = appPreferences.isProtectionEnabled
 
+    private val _isAccessibilityEnabled = MutableStateFlow(false)
+    val isAccessibilityEnabled: StateFlow<Boolean> = _isAccessibilityEnabled.asStateFlow()
+
     private val _diagnosticResult = MutableStateFlow<String?>(null)
     val diagnosticResult: StateFlow<String?> = _diagnosticResult.asStateFlow()
 
-    fun toggleProtection(context: Context) {
+    fun refreshAccessibilityStatus(context: Context) {
+        _isAccessibilityEnabled.value = AccessibilityUtils.isAccessibilityServiceEnabled(context)
+    }
+
+    fun startProtection(context: Context) {
         viewModelScope.launch {
-            if (vpnStatus.value is VpnStatus.Connected) {
-                GuardianVpnService.stopService(context)
-            } else {
-                GuardianVpnService.startService(context)
-            }
+            appPreferences.setProtectionEnabled(true)
+            GuardianVpnService.startService(context)
+        }
+    }
+
+    fun stopProtection(context: Context) {
+        viewModelScope.launch {
+            appPreferences.setProtectionEnabled(false)
+            GuardianVpnService.stopService(context)
         }
     }
 
@@ -67,4 +78,3 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         _diagnosticResult.value = null
     }
 }
-

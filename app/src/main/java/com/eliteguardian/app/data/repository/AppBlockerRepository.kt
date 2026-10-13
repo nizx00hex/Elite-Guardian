@@ -2,8 +2,6 @@ package com.eliteguardian.app.data.repository
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import com.eliteguardian.app.data.database.AppDatabase
 import com.eliteguardian.app.data.database.BlockedAppEntity
@@ -28,14 +26,24 @@ class AppBlockerRepository(
 ) {
     private val database = AppDatabase.getInstance(context)
     private val dao = database.blockedAppDao()
+    private val prefs = context.getSharedPreferences("elite_blocked_apps_prefs", Context.MODE_PRIVATE)
 
-    val blockedPackageSet = CopyOnWriteArraySet<String>()
+    // Synchronous memory cache backed by SharedPreferences
+    val blockedPackageSet = CopyOnWriteArraySet<String>().apply {
+        addAll(prefs.getStringSet("blocked_pkgs", emptySet()) ?: emptySet())
+    }
 
     init {
         scope.launch {
+            // Sync database with cache
+            val active = dao.getActiveBlockedPackageNames()
+            blockedPackageSet.addAll(active)
+            prefs.edit().putStringSet("blocked_pkgs", blockedPackageSet).apply()
+
             dao.getActiveBlockedApps().distinctUntilChanged().collect { apps ->
                 blockedPackageSet.clear()
                 apps.forEach { blockedPackageSet.add(it.packageName) }
+                prefs.edit().putStringSet("blocked_pkgs", blockedPackageSet).apply()
             }
         }
     }
@@ -48,7 +56,7 @@ class AppBlockerRepository(
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
         val resolveInfos = pm.queryIntentActivities(intent, 0)
-        val activeBlocked = dao.getActiveBlockedPackageNames().toSet()
+        val activeBlocked = blockedPackageSet
 
         val myPackage = context.packageName
 
@@ -57,7 +65,11 @@ class AppBlockerRepository(
             if (pkg == myPackage) return@mapNotNull null
 
             val name = resolveInfo.loadLabel(pm).toString()
-            val icon = resolveInfo.loadIcon(pm)
+            val icon = try {
+                resolveInfo.loadIcon(pm)
+            } catch (e: Exception) {
+                null
+            }
             AppInfoItem(
                 packageName = pkg,
                 appName = name,
@@ -68,6 +80,14 @@ class AppBlockerRepository(
     }
 
     suspend fun toggleAppBlock(packageName: String, appName: String, isBlocked: Boolean) {
+        if (isBlocked) {
+            blockedPackageSet.add(packageName)
+        } else {
+            blockedPackageSet.remove(packageName)
+        }
+        // Commit synchronously to preferences
+        prefs.edit().putStringSet("blocked_pkgs", blockedPackageSet).commit()
+
         dao.insert(
             BlockedAppEntity(
                 packageName = packageName,
@@ -75,15 +95,12 @@ class AppBlockerRepository(
                 isBlocked = isBlocked
             )
         )
-        if (isBlocked) {
-            blockedPackageSet.add(packageName)
-        } else {
-            blockedPackageSet.remove(packageName)
-        }
     }
 
     fun isAppBlocked(packageName: String): Boolean {
-        return blockedPackageSet.contains(packageName)
+        if (blockedPackageSet.contains(packageName)) return true
+        val saved = prefs.getStringSet("blocked_pkgs", null)
+        return saved?.contains(packageName) == true
     }
 
     companion object {
@@ -99,4 +116,3 @@ class AppBlockerRepository(
         }
     }
 }
-

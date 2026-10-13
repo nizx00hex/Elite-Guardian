@@ -1,9 +1,12 @@
 package com.eliteguardian.app.ui.dashboard
 
 import android.app.Activity
+import android.content.Intent
 import android.net.VpnService
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,8 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.eliteguardian.app.R
 import com.eliteguardian.app.ui.theme.*
 import com.eliteguardian.app.vpn.VpnStatus
 import java.text.SimpleDateFormat
@@ -39,19 +45,27 @@ fun DashboardScreen(
     onNavigateToSettings: () -> Unit
 ) {
     val context = LocalContext.current
+    val isProtectionPref by viewModel.isProtectionEnabled.collectAsState(initial = false)
     val vpnStatus by viewModel.vpnStatus.collectAsState()
-    val isProtected = vpnStatus is VpnStatus.Connected
+    val isProtected = (vpnStatus is VpnStatus.Connected) || isProtectionPref
+
+    val isAccessibilityActive by viewModel.isAccessibilityEnabled.collectAsState()
+
     val totalBlocked by viewModel.totalBlockedCount.collectAsState(initial = 0L)
     val isSafeSearch by viewModel.isSafeSearchEnabled.collectAsState(initial = true)
     val isFocusMode by viewModel.isFocusModeActive.collectAsState(initial = false)
     val lastInitTime by viewModel.lastFilterInitTime.collectAsState(initial = 0L)
     val diagnosticResult by viewModel.diagnosticResult.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.refreshAccessibilityStatus(context)
+    }
+
     val vpnLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            viewModel.toggleProtection(context)
+            viewModel.startProtection(context)
         }
     }
 
@@ -61,8 +75,8 @@ fun DashboardScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        androidx.compose.foundation.Image(
-                            painter = androidx.compose.ui.res.painterResource(id = com.eliteguardian.app.R.drawable.app_logo),
+                        Image(
+                            painter = painterResource(id = R.drawable.app_logo),
                             contentDescription = "EliteGuardian Logo",
                             modifier = Modifier
                                 .size(32.dp)
@@ -99,7 +113,7 @@ fun DashboardScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Diagnostic Alert Banner
             diagnosticResult?.let { result ->
@@ -110,10 +124,10 @@ fun DashboardScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(bottom = 12.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -134,6 +148,52 @@ fun DashboardScreen(
                     }
                 }
             }
+
+            // Accessibility Shield Status Banner
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isAccessibilityActive) ShieldGreen.copy(alpha = 0.12f) else WarningAmber.copy(alpha = 0.15f)
+                ),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        context.startActivity(intent)
+                    }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (isAccessibilityActive) Icons.Default.CheckCircle else Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = if (isAccessibilityActive) ShieldGreen else WarningAmber,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = if (isAccessibilityActive) "Accessibility Shield: Active" else "Accessibility Shield: Disabled",
+                            style = Typography.titleMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = if (isAccessibilityActive) "App Blocker & Keyword Filter are actively protecting you." else "Tap to enable in Android Accessibility Settings.",
+                            style = Typography.bodyMedium,
+                            color = TextMuted
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = TextSecondary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Hero Protection Card
             Card(
@@ -157,8 +217,8 @@ fun DashboardScreen(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        androidx.compose.foundation.Image(
-                            painter = androidx.compose.ui.res.painterResource(id = com.eliteguardian.app.R.drawable.app_logo),
+                        Image(
+                            painter = painterResource(id = R.drawable.app_logo),
                             contentDescription = "EliteGuardian Logo",
                             modifier = Modifier
                                 .size(88.dp)
@@ -189,13 +249,18 @@ fun DashboardScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // Fixed Reliable Toggle Button
                     Button(
                         onClick = {
-                            val prepareIntent = VpnService.prepare(context)
-                            if (prepareIntent != null) {
-                                vpnLauncher.launch(prepareIntent)
+                            if (isProtected) {
+                                viewModel.stopProtection(context)
                             } else {
-                                viewModel.toggleProtection(context)
+                                val prepareIntent = VpnService.prepare(context)
+                                if (prepareIntent != null) {
+                                    vpnLauncher.launch(prepareIntent)
+                                } else {
+                                    viewModel.startProtection(context)
+                                }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(

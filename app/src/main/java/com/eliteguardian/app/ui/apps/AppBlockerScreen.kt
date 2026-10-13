@@ -10,9 +10,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import com.eliteguardian.app.accessibility.AccessibilityUtils
 import com.eliteguardian.app.data.repository.AppInfoItem
 import com.eliteguardian.app.ui.theme.*
 
@@ -35,6 +37,15 @@ fun AppBlockerScreen(
     val apps by viewModel.filteredApps.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+
+    var isAccessibilityEnabled by remember {
+        mutableStateOf(AccessibilityUtils.isAccessibilityServiceEnabled(context))
+    }
+
+    DisposableEffect(Unit) {
+        isAccessibilityEnabled = AccessibilityUtils.isAccessibilityServiceEnabled(context)
+        onDispose { }
+    }
 
     Scaffold(
         containerColor = DarkBackground,
@@ -58,7 +69,9 @@ fun AppBlockerScreen(
         ) {
             // Accessibility Service Banner
             Card(
-                colors = CardDefaults.cardColors(containerColor = DarkSurface),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isAccessibilityEnabled) ShieldGreen.copy(alpha = 0.12f) else ErrorRose.copy(alpha = 0.15f)
+                ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -68,21 +81,39 @@ fun AppBlockerScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.AccessibilityNew, contentDescription = null, tint = PrimaryIndigoLight)
+                    Icon(
+                        imageVector = if (isAccessibilityEnabled) Icons.Default.CheckCircle else Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = if (isAccessibilityEnabled) ShieldGreen else ErrorRose,
+                        modifier = Modifier.size(28.dp)
+                    )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("App Blocking Service", style = Typography.titleMedium, color = TextPrimary)
                         Text(
-                            "Requires Accessibility permission to detect and close blocked apps.",
+                            text = if (isAccessibilityEnabled) "Service Active & Monitoring" else "Accessibility Service is OFF",
+                            style = Typography.titleMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = if (isAccessibilityEnabled)
+                                "EliteGuardian is actively blocking selected applications."
+                            else
+                                "Tap Enable to turn on EliteGuardian in Accessibility Settings. (On Android 13+, tap 3 dots on App Info -> Allow restricted settings if required).",
                             style = Typography.bodyMedium,
                             color = TextMuted
                         )
                     }
-                    TextButton(onClick = {
-                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                        context.startActivity(intent)
-                    }) {
-                        Text("Enable", color = PrimaryIndigoLight)
+                    if (!isAccessibilityEnabled) {
+                        Button(
+                            onClick = {
+                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                context.startActivity(intent)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Enable")
+                        }
                     }
                 }
             }
@@ -104,7 +135,15 @@ fun AppBlockerScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+
+            val blockedCount = apps.count { it.isBlocked }
+            Text(
+                text = "$blockedCount apps blocked out of ${apps.size} installed",
+                style = Typography.bodyMedium,
+                color = TextSecondary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
             if (isLoading) {
                 Box(
@@ -208,4 +247,3 @@ private fun AppListItem(
         }
     }
 }
-

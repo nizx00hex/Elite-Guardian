@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
@@ -30,6 +31,16 @@ fun KeywordScreen(
 
     var showAddDialog by remember { mutableStateOf(false) }
     var newKeywordInput by remember { mutableStateOf("") }
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var isAccessibilityEnabled by remember {
+        mutableStateOf(com.eliteguardian.app.accessibility.AccessibilityUtils.isAccessibilityServiceEnabled(context))
+    }
+
+    DisposableEffect(Unit) {
+        isAccessibilityEnabled = com.eliteguardian.app.accessibility.AccessibilityUtils.isAccessibilityServiceEnabled(context)
+        onDispose { }
+    }
 
     Scaffold(
         containerColor = DarkBackground,
@@ -65,9 +76,11 @@ fun KeywordScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp)
         ) {
-            // Explanatory Banner
+            // Live Status Banner
             Card(
-                colors = CardDefaults.cardColors(containerColor = DarkSurface),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isAccessibilityEnabled) ShieldGreen.copy(alpha = 0.12f) else ErrorRose.copy(alpha = 0.15f)
+                ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -77,15 +90,39 @@ fun KeywordScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.Warning, contentDescription = null, tint = WarningAmber)
+                    Icon(
+                        imageVector = if (isAccessibilityEnabled) Icons.Default.CheckCircle else Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = if (isAccessibilityEnabled) ShieldGreen else ErrorRose,
+                        modifier = Modifier.size(28.dp)
+                    )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text("Active Keyword Shield", style = Typography.titleMedium, color = TextPrimary)
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "When any restricted word is typed (e.g. 'porn'), the typing app will be immediately closed.",
+                            text = if (isAccessibilityEnabled) "Keyword Shield Active" else "Keyword Service is OFF",
+                            style = Typography.titleMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = if (isAccessibilityEnabled)
+                                "When any restricted word is typed (e.g. 'porn'), the typing app will be immediately closed."
+                            else
+                                "Tap Enable to turn on EliteGuardian in Accessibility Settings. (On Android 13+, tap 3 dots on App Info -> Allow restricted settings if required).",
                             style = Typography.bodyMedium,
                             color = TextMuted
                         )
+                    }
+                    if (!isAccessibilityEnabled) {
+                        Button(
+                            onClick = {
+                                val intent = android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                context.startActivity(intent)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Enable")
+                        }
                     }
                 }
             }
