@@ -27,3 +27,4 @@ To maintain absolute transparency and adhere to Android security principles, the
 ## 4. Uninstall Prevention Boundaries
 - **Behavior:** No non-system Android application can make itself 100% impossible to uninstall on an unmanaged consumer device.
 - **EliteGuardian Approach:** Uses Android's official Device Administration API (`DeviceAdminReceiver`) as an effective **anti-relapse deterrent**. This prevents quick uninstallation from the launcher, requiring the user to intentionally open system settings and deactivate admin mode.
+

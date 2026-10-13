@@ -32,6 +32,7 @@ fun SettingsScreen(
     val isSafeSearch by viewModel.isSafeSearch.collectAsState(initial = true)
     val hasPin by viewModel.hasPinConfigured.collectAsState()
     val isDeviceAdmin by viewModel.isDeviceAdmin.collectAsState(initial = false)
+    val isFocusActive by viewModel.isFocusActive.collectAsState(initial = false)
     val message by viewModel.message.collectAsState()
 
     var showSetPinDialog by remember { mutableStateOf(false) }
@@ -115,7 +116,7 @@ fun SettingsScreen(
                 Column {
                     SettingsRow(
                         title = if (hasPin) "Change or Remove PIN" else "Set Security PIN",
-                        subtitle = if (hasPin) "PIN is active. Required to stop protection or focus sessions." else "Protect your settings against impulsive tampering.",
+                        subtitle = if (hasPin) "PIN is active. Required to stop protection or modify rules." else "Protect your settings against impulsive tampering.",
                         icon = Icons.Default.Lock,
                         onClick = {
                             pinInput = ""
@@ -125,10 +126,19 @@ fun SettingsScreen(
                         }
                     )
                     HorizontalDivider(color = DarkSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp))
+
+                    // Device Administrator row - DISABLED while Focus Mode is active!
                     SettingsRow(
                         title = "Device Administrator",
-                        subtitle = if (isDeviceAdmin) "Active. Prevents uninstallation without admin removal." else "Make uninstallation harder by registering as Device Admin.",
-                        icon = Icons.Default.Security,
+                        subtitle = if (isFocusActive)
+                            "🔒 Locked during active Focus Mode. Cannot be deactivated until Focus Mode finishes."
+                        else if (isDeviceAdmin)
+                            "Active. Prevents uninstallation without admin removal."
+                        else
+                            "Make uninstallation harder by registering as Device Admin.",
+                        icon = if (isFocusActive) Icons.Default.Lock else Icons.Default.Security,
+                        iconTint = if (isFocusActive) WarningAmber else PrimaryIndigoLight,
+                        enabled = !isFocusActive,
                         onClick = {
                             val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
                             val adminComponent = ComponentName(context, GuardianDeviceAdminReceiver::class.java)
@@ -189,6 +199,7 @@ fun SettingsScreen(
                     subtitle = "Clears all custom domains, reset PIN, and restore defaults.",
                     icon = Icons.Default.DeleteForever,
                     iconTint = ErrorRose,
+                    enabled = !isFocusActive,
                     onClick = { showResetConfirmDialog = true }
                 )
             }
@@ -364,23 +375,38 @@ private fun SettingsRow(
     subtitle: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     iconTint: androidx.compose.ui.graphics.Color = PrimaryIndigoLight,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = if (enabled) iconTint else TextMuted,
+            modifier = Modifier.size(24.dp)
+        )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = Typography.titleMedium, color = TextPrimary)
+            Text(
+                text = title,
+                style = Typography.titleMedium,
+                color = if (enabled) TextPrimary else TextSecondary
+            )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = subtitle, style = Typography.bodyMedium, color = TextMuted)
+            Text(
+                text = subtitle,
+                style = Typography.bodyMedium,
+                color = TextMuted
+            )
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMuted)
+        if (enabled) {
+            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMuted)
+        }
     }
 }
-

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.net.VpnService
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,7 +22,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.eliteguardian.app.ui.theme.*
 import com.eliteguardian.app.vpn.VpnStatus
 import java.text.SimpleDateFormat
@@ -35,6 +33,8 @@ import java.util.Locale
 fun DashboardScreen(
     viewModel: DashboardViewModel,
     onNavigateToBlocklist: () -> Unit,
+    onNavigateToAppBlocker: () -> Unit,
+    onNavigateToKeywordBlocker: () -> Unit,
     onNavigateToFocus: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
@@ -136,9 +136,7 @@ fun DashboardScreen(
 
             // Hero Protection Card
             Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = DarkSurface
-                ),
+                colors = CardDefaults.cardColors(containerColor = DarkSurface),
                 shape = RoundedCornerShape(24.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -264,9 +262,9 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Quick Action Items
+            // Quick Controls
             Text(
-                text = "Quick Controls",
+                text = "Controls & Blockers",
                 style = Typography.titleMedium,
                 color = TextSecondary,
                 modifier = Modifier
@@ -275,17 +273,35 @@ fun DashboardScreen(
             )
 
             ActionItemRow(
-                title = "Blocklist & Allowlist",
-                subtitle = "Manage custom blocked and allowed domains",
-                icon = Icons.Default.List,
+                title = "Domain Blocklist & Allowlist",
+                subtitle = "Manage custom websites and permitted domains",
+                icon = Icons.Default.Language,
                 onClick = onNavigateToBlocklist
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
             ActionItemRow(
+                title = "App Blocker",
+                subtitle = "Block installed apps from opening",
+                icon = Icons.Default.Apps,
+                onClick = onNavigateToAppBlocker
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            ActionItemRow(
+                title = "Keyword Filter Shield",
+                subtitle = "Closes typing apps when words like 'porn' are entered",
+                icon = Icons.Default.Spellcheck,
+                onClick = onNavigateToKeywordBlocker
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            ActionItemRow(
                 title = "Focus Mode & Schedule",
-                subtitle = "Set distraction-free timed blocking windows",
+                subtitle = "Strict locked focus with Device Administrator required",
                 icon = Icons.Default.HourglassTop,
                 onClick = onNavigateToFocus
             )
@@ -373,4 +389,3 @@ private fun ActionItemRow(
         }
     }
 }
-

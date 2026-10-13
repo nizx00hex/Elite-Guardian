@@ -11,6 +11,11 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!-- Query all packages to display installed apps in App Blocker -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
     <!-- Optional permission for Focus Mode app usage tracking -->
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
@@ -51,6 +56,20 @@
             </intent-filter>
         </service>
 
+        <!-- Guardian Accessibility Service for Keyword Detection and App Blocking -->
+        <service
+            android:name=".accessibility.GuardianAccessibilityService"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
         <!-- Reboot auto-start receiver -->
         <receiver
             android:name=".receiver.BootReceiver"
@@ -72,6 +91,7 @@
                 android:name="android.app.device_admin"
                 android:resource="@xml/device_admin" />
             <intent-filter>
+                <action android:name="android.app.action.ADD_DEVICE_ADMIN" />
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
                 <action android:name="android.app.action.DEVICE_ADMIN_DISABLED" />
             </intent-filter>
@@ -80,4 +100,3 @@
     </application>
 
 </manifest>
-

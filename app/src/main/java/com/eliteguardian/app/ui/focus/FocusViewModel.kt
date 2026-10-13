@@ -1,11 +1,14 @@
 package com.eliteguardian.app.ui.focus
 
 import android.app.Application
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.eliteguardian.app.EliteGuardianApp
 import com.eliteguardian.app.data.preferences.AppPreferences
-import com.eliteguardian.app.security.PinManager
+import com.eliteguardian.app.receiver.GuardianDeviceAdminReceiver
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,9 +26,6 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _remainingTimeFormatted = MutableStateFlow("00:00:00")
     val remainingTimeFormatted: StateFlow<String> = _remainingTimeFormatted.asStateFlow()
-
-    private val _pinPromptRequired = MutableStateFlow(false)
-    val pinPromptRequired: StateFlow<Boolean> = _pinPromptRequired.asStateFlow()
 
     init {
         startTimerLoop()
@@ -56,42 +56,27 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun startFocusSession(durationMinutes: Int) {
+    fun isDeviceAdminActive(context: Context): Boolean {
+        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val adminComponent = ComponentName(context, GuardianDeviceAdminReceiver::class.java)
+        return dpm.isAdminActive(adminComponent)
+    }
+
+    fun startFocusSession(
+        context: Context,
+        durationMinutes: Int,
+        onRequireDeviceAdmin: () -> Unit,
+        onStarted: () -> Unit
+    ) {
+        if (!isDeviceAdminActive(context)) {
+            onRequireDeviceAdmin()
+            return
+        }
+
         viewModelScope.launch {
             val endTime = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
             appPreferences.setFocusMode(true, endTime)
-        }
-    }
-
-    fun requestStopFocusSession(onRequiresPin: () -> Unit, onStopped: () -> Unit) {
-        viewModelScope.launch {
-            val savedHash = appPreferences.pinHash.first()
-            if (savedHash.isNullOrBlank()) {
-                // No PIN configured, can stop directly
-                appPreferences.setFocusMode(false, 0L)
-                onStopped()
-            } else {
-                onRequiresPin()
-            }
-        }
-    }
-
-    fun verifyPinAndStop(pin: String, onSuccess: () -> Unit, onError: () -> Unit) {
-        viewModelScope.launch {
-            val savedHash = appPreferences.pinHash.first()
-            val savedSalt = appPreferences.pinSalt.first()
-            if (savedHash != null && savedSalt != null) {
-                if (PinManager.verifyPin(pin, savedSalt, savedHash)) {
-                    appPreferences.setFocusMode(false, 0L)
-                    onSuccess()
-                } else {
-                    onError()
-                }
-            } else {
-                appPreferences.setFocusMode(false, 0L)
-                onSuccess()
-            }
+            onStarted()
         }
     }
 }
-

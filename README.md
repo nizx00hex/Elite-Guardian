@@ -148,3 +148,4 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## ⚖️ License
 EliteGuardian is distributed under the [Apache License 2.0](LICENSE).
+

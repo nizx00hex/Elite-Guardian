@@ -1,7 +1,6 @@
 package com.eliteguardian.app.ui.settings
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.eliteguardian.app.EliteGuardianApp
@@ -23,6 +22,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val isSafeSearch = appPreferences.isSafeSearchEnabled
     val hasPinConfigured = MutableStateFlow(false)
     val isDeviceAdmin = appPreferences.isDeviceAdminEnabled
+    val isFocusActive = appPreferences.isFocusModeActive
     val cooldownMinutes = appPreferences.cooldownMinutes
 
     private val _message = MutableStateFlow<String?>(null)
@@ -99,4 +99,3 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         _message.value = null
     }
 }
-

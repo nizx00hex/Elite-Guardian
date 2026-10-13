@@ -65,3 +65,4 @@ When deploying to a physical Android device, perform the following verification 
   - Enable Device Administrator in Settings.
   - Attempt to drag-and-drop uninstall from Android home launcher.
   - Confirm Android displays: "This app is an active device administrator and cannot be uninstalled."
+

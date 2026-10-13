@@ -4,7 +4,8 @@ sealed class Screen(val route: String, val title: String) {
     object Onboarding : Screen("onboarding", "Welcome")
     object Dashboard : Screen("dashboard", "Dashboard")
     object Blocklist : Screen("blocklist", "Blocklist")
+    object AppBlocker : Screen("app_blocker", "App Blocker")
+    object KeywordBlocker : Screen("keyword_blocker", "Keyword Blocker")
     object Focus : Screen("focus", "Focus Mode")
     object Settings : Screen("settings", "Settings")
 }
-

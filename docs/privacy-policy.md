@@ -43,3 +43,4 @@ EliteGuardian operates **100% offline and on-device**:
 
 ## 5. Contact & Auditing
 EliteGuardian is open source. You can audit the entire source code, build reproducible APKs, and verify that no network requests other than standard upstream DNS queries take place.
+
