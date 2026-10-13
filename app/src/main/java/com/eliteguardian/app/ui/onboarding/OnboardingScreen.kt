@@ -6,6 +6,7 @@ import android.net.VpnService
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -137,20 +138,13 @@ private fun WelcomeStep() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Box(
+        Image(
+            painter = androidx.compose.ui.res.painterResource(id = com.eliteguardian.app.R.drawable.app_logo),
+            contentDescription = "EliteGuardian Logo",
             modifier = Modifier
-                .size(96.dp)
+                .size(110.dp)
                 .clip(CircleShape)
-                .background(DarkSurface),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Shield,
-                contentDescription = null,
-                tint = PrimaryIndigo,
-                modifier = Modifier.size(56.dp)
-            )
-        }
+        )
 
         Spacer(modifier = Modifier.height(28.dp))
 

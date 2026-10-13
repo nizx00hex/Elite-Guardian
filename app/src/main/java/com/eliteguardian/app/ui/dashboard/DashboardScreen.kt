@@ -61,13 +61,14 @@ fun DashboardScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Shield,
-                            contentDescription = null,
-                            tint = PrimaryIndigo,
-                            modifier = Modifier.size(28.dp)
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(id = com.eliteguardian.app.R.drawable.app_logo),
+                            contentDescription = "EliteGuardian Logo",
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "EliteGuardian",
                             style = Typography.titleLarge,
@@ -151,16 +152,17 @@ fun DashboardScreen(
                             .size(110.dp)
                             .clip(CircleShape)
                             .background(
-                                if (isProtected) ShieldGreen.copy(alpha = 0.15f)
+                                if (isProtected) ShieldGreen.copy(alpha = 0.2f)
                                 else DarkSurfaceVariant
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Shield,
-                            contentDescription = null,
-                            tint = if (isProtected) ShieldGreen else TextSecondary,
-                            modifier = Modifier.size(64.dp)
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(id = com.eliteguardian.app.R.drawable.app_logo),
+                            contentDescription = "EliteGuardian Logo",
+                            modifier = Modifier
+                                .size(88.dp)
+                                .clip(CircleShape)
                         )
                     }
 
