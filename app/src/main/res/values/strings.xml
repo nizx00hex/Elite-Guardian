@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">EliteGuardian</string>
+    <string name="vpn_channel_name">Protection Service</string>
+    <string name="vpn_channel_desc">Shows active DNS filtering and protection status</string>
+    <string name="vpn_running_title">EliteGuardian is Active</string>
+    <string name="vpn_running_desc">Adult content and malicious trackers are filtered.</string>
+    <string name="device_admin_description">Prevents accidental disabling or uninstallation of EliteGuardian protection.</string>
+    <string name="diagnostic_domain">test.adult.eliteguardian.local</string>
+</resources>
+
