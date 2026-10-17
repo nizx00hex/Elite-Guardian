@@ -305,3 +305,4 @@ adb logcat -s "GuardianDeviceAdmin" "FocusMode"
      ```bash
      adb shell pm clear com.eliteguardian.app
      ```
+
