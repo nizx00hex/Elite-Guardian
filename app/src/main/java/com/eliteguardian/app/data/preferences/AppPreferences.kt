@@ -132,7 +132,19 @@ class AppPreferences(private val context: Context) {
         context.dataStore.edit { it[KEY_SAFESEARCH_ENABLED] = enabled }
     }
 
+    fun isFocusModeActiveSync(): Boolean {
+        val sp = context.getSharedPreferences("elite_sync_prefs", Context.MODE_PRIVATE)
+        val active = sp.getBoolean("is_focus_active", false)
+        val endTime = sp.getLong("focus_end_time", 0L)
+        return active && endTime > System.currentTimeMillis()
+    }
+
     suspend fun setFocusMode(active: Boolean, endTimeMillis: Long = 0L) {
+        context.getSharedPreferences("elite_sync_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("is_focus_active", active)
+            .putLong("focus_end_time", endTimeMillis)
+            .apply()
         context.dataStore.edit {
             it[KEY_FOCUS_MODE_ACTIVE] = active
             it[KEY_FOCUS_END_TIME] = endTimeMillis

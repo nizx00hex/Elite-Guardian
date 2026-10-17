@@ -256,13 +256,14 @@ fun DayDetailBottomSheet(
                     onClick = { selectedStatus = StreakStatus.COMPLETED },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedStatus == StreakStatus.COMPLETED) ShieldGreen else DarkSurfaceVariant,
-                        contentColor = if (selectedStatus == StreakStatus.COMPLETED) GlowWhite else TextSecondary
+                        contentColor = if (selectedStatus == StreakStatus.COMPLETED) Color.White else TextSecondary
                     ),
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "Completed Clean",
+                        color = if (selectedStatus == StreakStatus.COMPLETED) Color.White else TextSecondary,
                         fontWeight = if (selectedStatus == StreakStatus.COMPLETED) FontWeight.Bold else FontWeight.Normal
                     )
                 }
@@ -271,13 +272,14 @@ fun DayDetailBottomSheet(
                     onClick = { selectedStatus = StreakStatus.LAPSE },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedStatus == StreakStatus.LAPSE) ErrorRose else DarkSurfaceVariant,
-                        contentColor = if (selectedStatus == StreakStatus.LAPSE) GlowWhite else TextSecondary
+                        contentColor = if (selectedStatus == StreakStatus.LAPSE) Color.White else TextSecondary
                     ),
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "Lapse",
+                        color = if (selectedStatus == StreakStatus.LAPSE) Color.White else TextSecondary,
                         fontWeight = if (selectedStatus == StreakStatus.LAPSE) FontWeight.Bold else FontWeight.Normal
                     )
                 }
@@ -317,7 +319,7 @@ fun DayDetailBottomSheet(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Clear Entry")
+                        Text("Clear Entry", color = ErrorRose)
                     }
                 }
 
@@ -327,13 +329,17 @@ fun DayDetailBottomSheet(
                         onDismiss()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryIndigo,
-                        contentColor = DarkBackground
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
                     ),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(if (record != null) 1f else 2f)
                 ) {
-                    Text("Save Changes", fontWeight = FontWeight.Bold)
+                    Text(
+                        "Save Changes",
+                        color = androidx.compose.ui.graphics.Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

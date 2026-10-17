@@ -261,11 +261,11 @@ fun FocusScreen(
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryIndigo,
-                        contentColor = DarkBackground
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
                     )
                 ) {
-                    Text("Start Focus", fontWeight = FontWeight.Bold)
+                    Text("Start Focus", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -304,11 +304,11 @@ fun FocusScreen(
                         context.startActivity(intent)
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryIndigo,
-                        contentColor = DarkBackground
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
                     )
                 ) {
-                    Text("Enable Admin", fontWeight = FontWeight.Bold)
+                    Text("Enable Admin", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

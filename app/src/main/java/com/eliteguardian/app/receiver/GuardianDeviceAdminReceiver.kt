@@ -23,9 +23,15 @@ class GuardianDeviceAdminReceiver : DeviceAdminReceiver() {
     companion object {
         const val DISABLE_WARNING_MESSAGE =
             "Disabling Admin Protection Mode removes the extra step required before uninstalling EliteGuardian."
+        const val FOCUS_MODE_LOCKED_MESSAGE =
+            "⛔ ACTIVE FOCUS SESSION LOCKED!\nDevice Administrator cannot be deactivated while Focus Mode is running. Please wait until your focus timer completes."
     }
 
     override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
+        val appPreferences = AppPreferences(context)
+        if (appPreferences.isFocusModeActiveSync()) {
+            return FOCUS_MODE_LOCKED_MESSAGE
+        }
         return DISABLE_WARNING_MESSAGE
     }
 

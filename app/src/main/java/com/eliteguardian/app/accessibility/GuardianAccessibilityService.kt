@@ -52,17 +52,28 @@ class GuardianAccessibilityService : AccessibilityService() {
         if (event == null) return
         val currentPackage = event.packageName?.toString() ?: return
 
-        // Never intercept EliteGuardian or critical Android system framework
+        // Never intercept EliteGuardian itself or critical Android system framework
         if (currentPackage == packageName ||
             currentPackage == "com.android.systemui" ||
-            currentPackage == "android" ||
-            currentPackage == "com.google.android.packageinstaller" ||
-            currentPackage == "com.android.packageinstaller"
+            currentPackage == "android"
         ) {
             return
         }
 
         val now = System.currentTimeMillis()
+
+        // 0. Focus Mode Lock: Block any attempt to deactivate Device Admin or uninstall EliteGuardian
+        if (appPreferences.isFocusModeActiveSync()) {
+            if (isTamperAttemptDuringFocus(event, currentPackage)) {
+                performGlobalAction(GLOBAL_ACTION_HOME)
+                performGlobalAction(GLOBAL_ACTION_BACK)
+                if (now - lastToastTimestamp > 2500) {
+                    lastToastTimestamp = now
+                    showToast("🔒 Locked by Focus Mode: EliteGuardian cannot be deactivated or uninstalled until your focus timer completes.")
+                }
+                return
+            }
+        }
 
         // 1. Check if the active or root window application is in blocked list
         val activeWindowPackage = try {
@@ -117,6 +128,84 @@ class GuardianAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {
         // Required by AccessibilityService
+    }
+
+    private fun isTamperAttemptDuringFocus(event: AccessibilityEvent, currentPackage: String): Boolean {
+        val targetPackages = setOf(
+            "com.android.settings",
+            "com.google.android.packageinstaller",
+            "com.android.packageinstaller",
+            "com.google.android.permissioncontroller",
+            "com.android.permissioncontroller"
+        )
+
+        val isTargetPkg = targetPackages.contains(currentPackage) ||
+                currentPackage.contains("packageinstaller") ||
+                currentPackage.contains("settings")
+
+        if (!isTargetPkg) return false
+
+        val eventText = event.text.joinToString(" ")
+        val contentDesc = event.contentDescription?.toString() ?: ""
+        val className = event.className?.toString() ?: ""
+
+        val mentionsEliteGuardianInEvent = eventText.contains("EliteGuardian", ignoreCase = true) ||
+                contentDesc.contains("EliteGuardian", ignoreCase = true) ||
+                className.contains("DeviceAdminAdd", ignoreCase = true)
+
+        var mentionsEliteGuardianInWindow = false
+        val rootNode = try {
+            rootInActiveWindow
+        } catch (_: Exception) {
+            null
+        }
+
+        if (rootNode != null) {
+            try {
+                val matches = rootNode.findAccessibilityNodeInfosByText("EliteGuardian")
+                if (!matches.isNullOrEmpty()) {
+                    mentionsEliteGuardianInWindow = true
+                }
+            } catch (_: Exception) {}
+        }
+
+        if (!mentionsEliteGuardianInEvent && !mentionsEliteGuardianInWindow) {
+            return false
+        }
+
+        val tamperKeywords = listOf(
+            "deactivate",
+            "uninstall",
+            "turn off",
+            "disable",
+            "force stop",
+            "clear data",
+            "clear storage",
+            "remove",
+            "device admin",
+            "administrator"
+        )
+
+        val fullWindowText = buildString {
+            append(eventText).append(" ")
+            append(contentDesc).append(" ")
+            append(className).append(" ")
+            rootNode?.let { extractTextRecursive(it, this, maxDepth = 4) }
+        }.lowercase()
+
+        return tamperKeywords.any { fullWindowText.contains(it) }
+    }
+
+    private fun extractTextRecursive(node: android.view.accessibility.AccessibilityNodeInfo, sb: StringBuilder, maxDepth: Int) {
+        if (maxDepth <= 0) return
+        node.text?.let { sb.append(it).append(" ") }
+        node.contentDescription?.let { sb.append(it).append(" ") }
+        for (i in 0 until node.childCount) {
+            val child = try { node.getChild(i) } catch (_: Exception) { null }
+            if (child != null) {
+                extractTextRecursive(child, sb, maxDepth - 1)
+            }
+        }
     }
 
     private fun showToast(message: String) {

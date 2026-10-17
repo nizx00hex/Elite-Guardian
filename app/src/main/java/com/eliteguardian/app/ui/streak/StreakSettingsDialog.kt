@@ -247,9 +247,12 @@ fun StreakSettingsDialog(
                             showImportDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
+                    )
                 ) {
-                    Text("Import")
+                    Text("Import", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

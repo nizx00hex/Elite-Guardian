@@ -381,11 +381,11 @@ fun SettingsScreen(
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryIndigo,
-                        contentColor = DarkBackground
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
                     )
                 ) {
-                    Text("Save PIN", fontWeight = FontWeight.Bold)
+                    Text("Save PIN", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -455,11 +455,11 @@ fun SettingsScreen(
                 Button(
                     onClick = { showPrivacyDialog = false },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryIndigo,
-                        contentColor = DarkBackground
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
                     )
                 ) {
-                    Text("Understood", fontWeight = FontWeight.Bold)
+                    Text("Understood", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkSurface
@@ -560,11 +560,11 @@ fun SettingsScreen(
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlowWhite,
-                        contentColor = DarkBackground
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
                     )
                 ) {
-                    Text("Continue to Android Settings", fontWeight = FontWeight.Bold)
+                    Text("Continue to Android Settings", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -612,6 +612,10 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         showAdminDisableDialog = false
+                        if (isFocusActive) {
+                            Toast.makeText(context, "🔒 Locked during active Focus Mode. Cannot deactivate Device Administrator.", Toast.LENGTH_LONG).show()
+                            return@Button
+                        }
                         var launched = false
                         val adminSettingsIntent = Intent().apply {
                             action = "android.settings.DEVICE_ADMIN_SETTINGS"
@@ -633,11 +637,11 @@ fun SettingsScreen(
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlowWhite,
-                        contentColor = DarkBackground
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
                     )
                 ) {
-                    Text("Open Android Settings", fontWeight = FontWeight.Bold)
+                    Text("Open Android Settings", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

@@ -119,12 +119,12 @@ fun AppBlockerScreen(
                                 context.startActivity(intent)
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = PrimaryIndigo,
-                                contentColor = DarkBackground
+                                containerColor = androidx.compose.ui.graphics.Color.White,
+                                contentColor = androidx.compose.ui.graphics.Color.Black
                             ),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Enable", fontWeight = FontWeight.Bold)
+                            Text("Enable", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

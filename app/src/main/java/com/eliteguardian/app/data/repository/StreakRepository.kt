@@ -37,11 +37,12 @@ class StreakRepository(
 
     suspend fun recordCheckIn(date: String, note: String? = null) = withContext(Dispatchers.IO) {
         val existing = streakDao.getRecordByDate(date)
+        streakDao.deleteByDate(date)
         val record = StreakRecordEntity(
-            id = existing?.id ?: 0,
+            id = 0,
             localDate = date,
             status = StreakStatus.COMPLETED.name,
-            note = note ?: existing?.note,
+            note = note,
             createdAt = existing?.createdAt ?: System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis()
         )
@@ -50,11 +51,12 @@ class StreakRepository(
 
     suspend fun recordLapse(date: String, note: String? = null) = withContext(Dispatchers.IO) {
         val existing = streakDao.getRecordByDate(date)
+        streakDao.deleteByDate(date)
         val record = StreakRecordEntity(
-            id = existing?.id ?: 0,
+            id = 0,
             localDate = date,
             status = StreakStatus.LAPSE.name,
-            note = note ?: existing?.note,
+            note = note,
             createdAt = existing?.createdAt ?: System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis()
         )

@@ -601,9 +601,12 @@ fun SearchRestrictionScreen(
                             viewModel.testDomainStatus(testDomainInput)
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
+                    )
                 ) {
-                    Text("Check Rule")
+                    Text("Check Rule", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -643,9 +646,12 @@ fun SearchRestrictionScreen(
             confirmButton = {
                 Button(
                     onClick = { showLimitationsDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
+                    )
                 ) {
-                    Text("Got It")
+                    Text("Got It", color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold)
                 }
             }
         )

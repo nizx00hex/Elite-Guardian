@@ -53,6 +53,14 @@ class AdminProtectionModeTest {
     }
 
     @Test
+    fun testFocusModeLockedMessageContent() {
+        val lockMessage = GuardianDeviceAdminReceiver.FOCUS_MODE_LOCKED_MESSAGE
+        assertNotNull(lockMessage)
+        assertTrue("Lock message must emphasize active focus session", lockMessage.contains("FOCUS SESSION LOCKED"))
+        assertTrue("Lock message must explain deactivation blockage", lockMessage.contains("cannot be deactivated while Focus Mode is running"))
+    }
+
+    @Test
     fun testIntentActionConstantsMatchDevicePolicyContract() {
         // Standard Android DevicePolicyManager & Settings action constants used in flow
         val addAdminAction = "android.app.action.ADD_DEVICE_ADMIN"
