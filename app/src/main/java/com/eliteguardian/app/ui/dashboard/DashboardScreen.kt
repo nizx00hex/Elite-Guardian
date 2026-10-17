@@ -42,6 +42,8 @@ fun DashboardScreen(
     onNavigateToAppBlocker: () -> Unit,
     onNavigateToKeywordBlocker: () -> Unit,
     onNavigateToFocus: () -> Unit,
+    onNavigateToStreak: () -> Unit,
+    onNavigateToSearchRestrictions: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     val context = LocalContext.current
@@ -57,8 +59,17 @@ fun DashboardScreen(
     val lastInitTime by viewModel.lastFilterInitTime.collectAsState(initial = 0L)
     val diagnosticResult by viewModel.diagnosticResult.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.refreshAccessibilityStatus(context)
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshAccessibilityStatus(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     val vpnLauncher = rememberLauncherForActivityResult(
@@ -209,19 +220,20 @@ fun DashboardScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(110.dp)
+                            .size(116.dp)
                             .clip(CircleShape)
                             .background(
-                                if (isProtected) ShieldGreen.copy(alpha = 0.2f)
-                                else DarkSurfaceVariant
-                            ),
+                                if (isProtected) ShieldGreen.copy(alpha = 0.15f)
+                                else GlowWhite.copy(alpha = 0.08f)
+                            )
+                            .padding(4.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.app_logo),
                             contentDescription = "EliteGuardian Logo",
                             modifier = Modifier
-                                .size(88.dp)
+                                .size(96.dp)
                                 .clip(CircleShape)
                         )
                     }
@@ -264,7 +276,8 @@ fun DashboardScreen(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isProtected) ErrorRose else PrimaryIndigo
+                            containerColor = if (isProtected) ErrorRose else PrimaryIndigo,
+                            contentColor = if (isProtected) GlowWhite else DarkBackground
                         ),
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
@@ -274,7 +287,7 @@ fun DashboardScreen(
                         Text(
                             text = if (isProtected) "Disable Protection" else "Enable Protection",
                             style = Typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -371,6 +384,24 @@ fun DashboardScreen(
                 subtitle = "Strict locked focus with Device Administrator required",
                 icon = Icons.Default.HourglassTop,
                 onClick = onNavigateToFocus
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            ActionItemRow(
+                title = "Streak Tracker",
+                subtitle = "Track daily clean habits, milestones, and private calendar",
+                icon = Icons.Default.Whatshot,
+                onClick = onNavigateToStreak
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            ActionItemRow(
+                title = "Search Restrictions",
+                subtitle = "Disable search access, enforce SafeSearch & block search engines",
+                icon = Icons.Default.SearchOff,
+                onClick = onNavigateToSearchRestrictions
             )
 
             Spacer(modifier = Modifier.height(10.dp))

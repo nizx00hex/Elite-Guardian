@@ -29,6 +29,12 @@ class AppPreferences(private val context: Context) {
         val KEY_DEVICE_ADMIN_ENABLED = booleanPreferencesKey("is_device_admin_enabled")
         val KEY_TOTAL_BLOCKED_COUNT = longPreferencesKey("total_blocked_count")
         val KEY_LAST_FILTER_INIT_TIME = longPreferencesKey("last_filter_init_time")
+        val KEY_STREAK_REMINDER_ENABLED = booleanPreferencesKey("streak_reminder_enabled")
+        val KEY_STREAK_REMINDER_HOUR = intPreferencesKey("streak_reminder_hour")
+        val KEY_STREAK_REMINDER_MINUTE = intPreferencesKey("streak_reminder_minute")
+        val KEY_SEARCH_RESTRICTIONS_ENABLED = booleanPreferencesKey("search_restrictions_enabled")
+        val KEY_SEARCH_FOCUS_RESTRICTION_ENABLED = booleanPreferencesKey("search_focus_restriction_enabled")
+        val KEY_DISABLED_SEARCH_ENGINES = stringPreferencesKey("disabled_search_engines") // comma-separated engine IDs
     }
 
     val isProtectionEnabled: Flow<Boolean> = context.dataStore.data.map {
@@ -77,6 +83,45 @@ class AppPreferences(private val context: Context) {
 
     val lastFilterInitTime: Flow<Long> = context.dataStore.data.map {
         it[KEY_LAST_FILTER_INIT_TIME] ?: 0L
+    }
+
+    val streakReminderEnabled: Flow<Boolean> = context.dataStore.data.map {
+        it[KEY_STREAK_REMINDER_ENABLED] ?: false
+    }
+
+    val streakReminderHour: Flow<Int> = context.dataStore.data.map {
+        it[KEY_STREAK_REMINDER_HOUR] ?: 21 // Default 9:00 PM
+    }
+
+    val streakReminderMinute: Flow<Int> = context.dataStore.data.map {
+        it[KEY_STREAK_REMINDER_MINUTE] ?: 0
+    }
+
+    val isSearchRestrictionsEnabled: Flow<Boolean> = context.dataStore.data.map {
+        it[KEY_SEARCH_RESTRICTIONS_ENABLED] ?: false
+    }
+
+    val isSearchFocusRestrictionEnabled: Flow<Boolean> = context.dataStore.data.map {
+        it[KEY_SEARCH_FOCUS_RESTRICTION_ENABLED] ?: true
+    }
+
+    val disabledSearchEngines: Flow<Set<String>> = context.dataStore.data.map {
+        val raw = it[KEY_DISABLED_SEARCH_ENGINES] ?: ""
+        if (raw.isBlank()) emptySet() else raw.split(",").toSet()
+    }
+
+    suspend fun setSearchRestrictionsEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[KEY_SEARCH_RESTRICTIONS_ENABLED] = enabled }
+    }
+
+    suspend fun setSearchFocusRestrictionEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[KEY_SEARCH_FOCUS_RESTRICTION_ENABLED] = enabled }
+    }
+
+    suspend fun setDisabledSearchEngines(engineIds: Set<String>) {
+        context.dataStore.edit {
+            it[KEY_DISABLED_SEARCH_ENGINES] = engineIds.joinToString(",")
+        }
     }
 
     suspend fun setProtectionEnabled(enabled: Boolean) {
@@ -135,6 +180,14 @@ class AppPreferences(private val context: Context) {
 
     suspend fun setLastFilterInitTime(time: Long) {
         context.dataStore.edit { it[KEY_LAST_FILTER_INIT_TIME] = time }
+    }
+
+    suspend fun setStreakReminder(enabled: Boolean, hour: Int = 21, minute: Int = 0) {
+        context.dataStore.edit {
+            it[KEY_STREAK_REMINDER_ENABLED] = enabled
+            it[KEY_STREAK_REMINDER_HOUR] = hour
+            it[KEY_STREAK_REMINDER_MINUTE] = minute
+        }
     }
 }
 

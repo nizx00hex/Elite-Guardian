@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.eliteguardian.app.data.database.BlocklistEntity
 import com.eliteguardian.app.ui.theme.*
@@ -85,11 +86,16 @@ fun BlocklistScreen(
                     viewModel.clearAddDomainError()
                     showAddDialog = true
                 },
-                containerColor = PrimaryIndigo,
-                contentColor = TextPrimary,
+                containerColor = androidx.compose.ui.graphics.Color.White,
+                contentColor = androidx.compose.ui.graphics.Color.Black,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Domain")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Domain",
+                    tint = androidx.compose.ui.graphics.Color.Black,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
     ) { padding ->
@@ -173,14 +179,47 @@ fun BlocklistScreen(
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = if (searchQuery.isNotBlank()) "No matching domains found."
-                        else if (selectedTab == 0) "No custom blocked domains.\nTap + to add one."
-                        else "No custom allowed domains.\nTap + to add one.",
-                        style = Typography.bodyLarge,
-                        color = TextMuted,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = if (searchQuery.isNotBlank()) "No matching domains found."
+                            else if (selectedTab == 0) "No custom blocked domains.\nTap + to add one."
+                            else "No custom allowed domains.\nTap + to add one.",
+                            style = Typography.bodyLarge,
+                            color = TextMuted,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        if (searchQuery.isBlank()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    newDomainInput = ""
+                                    viewModel.clearAddDomainError()
+                                    showAddDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = androidx.compose.ui.graphics.Color.White,
+                                    contentColor = androidx.compose.ui.graphics.Color.Black
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = androidx.compose.ui.graphics.Color.Black,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (selectedTab == 0) "Add Blocked Domain" else "Add Allowed Domain",
+                                    color = androidx.compose.ui.graphics.Color.Black,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
             } else {
                 LazyColumn(
@@ -238,9 +277,12 @@ fun BlocklistScreen(
                             onComplete = { showAddDialog = false }
                         )
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
+                    )
                 ) {
-                    Text("Add")
+                    Text("Add", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

@@ -80,6 +80,11 @@
             </intent-filter>
         </receiver>
 
+        <!-- Streak daily reminder receiver -->
+        <receiver
+            android:name=".receiver.StreakReminderReceiver"
+            android:exported="false" />
+
         <!-- Optional Device Administrator for anti-tamper / anti-relapse -->
         <receiver
             android:name=".receiver.GuardianDeviceAdminReceiver"

@@ -7,4 +7,11 @@
     <string name="device_admin_description">Prevents accidental disabling or uninstallation of EliteGuardian protection.</string>
     <string name="diagnostic_domain">test.adult.eliteguardian.local</string>
     <string name="accessibility_service_description">Detects explicit typed keywords to close inappropriate apps and enforces application blocking during focus sessions.</string>
+    <string name="streak_channel_name">Streak Reminders</string>
+    <string name="streak_channel_desc">Daily neutral reminder for your habit check-in</string>
+    <string name="streak_reminder_title">Daily Check-In</string>
+    <string name="streak_reminder_desc">Your daily habit check-in is ready.</string>
+    <string name="admin_protection_title">Admin Protection Mode</string>
+    <string name="admin_protection_desc">Adds an extra step before protection can be disabled.</string>
+    <string name="admin_protection_explanation">EliteGuardian uses Device Administrator privileges solely to prevent accidental or impulsive uninstallation.</string>
 </resources>

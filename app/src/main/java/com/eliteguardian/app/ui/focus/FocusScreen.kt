@@ -260,9 +260,12 @@ fun FocusScreen(
                             })
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PrimaryIndigo,
+                        contentColor = DarkBackground
+                    )
                 ) {
-                    Text("Start Focus")
+                    Text("Start Focus", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -290,7 +293,6 @@ fun FocusScreen(
                 Button(
                     onClick = {
                         showDeviceAdminPromptDialog = false
-                        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
                         val adminComponent = ComponentName(context, GuardianDeviceAdminReceiver::class.java)
                         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
                             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
@@ -301,9 +303,12 @@ fun FocusScreen(
                         }
                         context.startActivity(intent)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PrimaryIndigo,
+                        contentColor = DarkBackground
+                    )
                 ) {
-                    Text("Enable Admin")
+                    Text("Enable Admin", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

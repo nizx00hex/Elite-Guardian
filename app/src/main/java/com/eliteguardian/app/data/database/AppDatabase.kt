@@ -9,9 +9,11 @@ import androidx.room.RoomDatabase
     entities = [
         BlocklistEntity::class,
         BlockedAppEntity::class,
-        KeywordEntity::class
+        KeywordEntity::class,
+        StreakRecordEntity::class,
+        CustomSearchDomainEntity::class
     ],
-    version = 2,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -19,6 +21,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun blocklistDao(): BlocklistDao
     abstract fun blockedAppDao(): BlockedAppDao
     abstract fun keywordDao(): KeywordDao
+    abstract fun streakDao(): StreakDao
+    abstract fun customSearchDomainDao(): CustomSearchDomainDao
 
     companion object {
         @Volatile

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.eliteguardian.app.accessibility.AccessibilityUtils
@@ -42,9 +43,17 @@ fun AppBlockerScreen(
         mutableStateOf(AccessibilityUtils.isAccessibilityServiceEnabled(context))
     }
 
-    DisposableEffect(Unit) {
-        isAccessibilityEnabled = AccessibilityUtils.isAccessibilityServiceEnabled(context)
-        onDispose { }
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                isAccessibilityEnabled = AccessibilityUtils.isAccessibilityServiceEnabled(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Scaffold(
@@ -109,10 +118,13 @@ fun AppBlockerScreen(
                                 val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                 context.startActivity(intent)
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PrimaryIndigo,
+                                contentColor = DarkBackground
+                            ),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Enable")
+                            Text("Enable", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -240,8 +252,10 @@ private fun AppListItem(
                 checked = app.isBlocked,
                 onCheckedChange = onToggle,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = ErrorRose,
-                    checkedTrackColor = ErrorRose.copy(alpha = 0.5f)
+                    checkedThumbColor = GlowWhite,
+                    checkedTrackColor = ErrorRose,
+                    uncheckedThumbColor = TextSecondary,
+                    uncheckedTrackColor = DarkSurfaceVariant
                 )
             )
         }

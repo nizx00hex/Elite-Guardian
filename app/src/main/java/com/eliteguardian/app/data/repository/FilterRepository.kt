@@ -20,6 +20,7 @@ class FilterRepository(
 ) {
     private val database = AppDatabase.getInstance(context)
     private val dao = database.blocklistDao()
+    private val searchRepo = SearchRestrictionRepository.getInstance(context)
     val matcher = DomainMatcher()
 
     private val seedBlocklist = mutableListOf<String>()
@@ -51,22 +52,26 @@ class FilterRepository(
 
     private fun observeDatabaseEntries() {
         scope.launch {
-            dao.getAllEntries().collect { entries ->
+            kotlinx.coroutines.flow.combine(
+                dao.getAllEntries(),
+                searchRepo.activeSearchBlockedDomains
+            ) { entries, searchBlockedDomains ->
                 val allows = entries.filter { it.isAllowlist }.map { it.domain }
                 val customBlocks = entries.filter { !it.isAllowlist }.map { it.domain }
 
                 matcher.setAllowlist(allows)
-                matcher.setBlocklist(seedBlocklist + customBlocks)
-            }
+                matcher.setBlocklist(seedBlocklist + customBlocks + searchBlockedDomains)
+            }.collect {}
         }
     }
 
     suspend fun refreshRules() = withContext(Dispatchers.IO) {
         val entries = dao.getAllEntriesSnapshot()
+        val searchBlockedDomains = searchRepo.activeSearchBlockedDomains.value
         val allows = entries.filter { it.isAllowlist }.map { it.domain }
         val customBlocks = entries.filter { !it.isAllowlist }.map { it.domain }
         matcher.setAllowlist(allows)
-        matcher.setBlocklist(seedBlocklist + customBlocks)
+        matcher.setBlocklist(seedBlocklist + customBlocks + searchBlockedDomains)
     }
 
     fun getAllEntries(): Flow<List<BlocklistEntity>> = dao.getAllEntries()

@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.eliteguardian.app.data.database.KeywordEntity
 import com.eliteguardian.app.ui.theme.*
@@ -37,9 +38,17 @@ fun KeywordScreen(
         mutableStateOf(com.eliteguardian.app.accessibility.AccessibilityUtils.isAccessibilityServiceEnabled(context))
     }
 
-    DisposableEffect(Unit) {
-        isAccessibilityEnabled = com.eliteguardian.app.accessibility.AccessibilityUtils.isAccessibilityServiceEnabled(context)
-        onDispose { }
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                isAccessibilityEnabled = com.eliteguardian.app.accessibility.AccessibilityUtils.isAccessibilityServiceEnabled(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Scaffold(
@@ -62,11 +71,16 @@ fun KeywordScreen(
                     viewModel.clearError()
                     showAddDialog = true
                 },
-                containerColor = PrimaryIndigo,
-                contentColor = TextPrimary,
+                containerColor = androidx.compose.ui.graphics.Color.White,
+                contentColor = androidx.compose.ui.graphics.Color.Black,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Keyword")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Keyword",
+                    tint = androidx.compose.ui.graphics.Color.Black,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
     ) { padding ->
@@ -118,10 +132,13 @@ fun KeywordScreen(
                                 val intent = android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                 context.startActivity(intent)
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PrimaryIndigo,
+                                contentColor = DarkBackground
+                            ),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Enable")
+                            Text("Enable", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -153,7 +170,40 @@ fun KeywordScreen(
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No keywords found. Tap + to add one.", color = TextMuted)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text("No keywords found. Tap + to add one.", color = TextMuted)
+                        if (searchQuery.isBlank()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    newKeywordInput = ""
+                                    viewModel.clearError()
+                                    showAddDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = androidx.compose.ui.graphics.Color.White,
+                                    contentColor = androidx.compose.ui.graphics.Color.Black
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = androidx.compose.ui.graphics.Color.Black,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Add Keyword",
+                                    color = androidx.compose.ui.graphics.Color.Black,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
             } else {
                 LazyColumn(
@@ -206,9 +256,12 @@ fun KeywordScreen(
                             showAddDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
+                    )
                 ) {
-                    Text("Add")
+                    Text("Add", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

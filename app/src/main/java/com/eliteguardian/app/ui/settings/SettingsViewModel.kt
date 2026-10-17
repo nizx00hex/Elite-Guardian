@@ -8,10 +8,19 @@ import com.eliteguardian.app.data.preferences.AppPreferences
 import com.eliteguardian.app.data.repository.FilterRepository
 import com.eliteguardian.app.security.PinManager
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+enum class AdminProtectionStatus {
+    ENABLED,
+    DISABLED,
+    PERMISSION_REQUIRED
+}
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -20,7 +29,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val filterRepo: FilterRepository = app.filterRepository
 
     val isSafeSearch = appPreferences.isSafeSearchEnabled
-    val hasPinConfigured = MutableStateFlow(false)
+    val hasPinConfigured: StateFlow<Boolean> = appPreferences.pinHash
+        .map { hash -> !hash.isNullOrBlank() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val isDeviceAdmin = appPreferences.isDeviceAdminEnabled
     val isFocusActive = appPreferences.isFocusModeActive
     val cooldownMinutes = appPreferences.cooldownMinutes
@@ -28,14 +39,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
 
-    init {
-        checkPinStatus()
-    }
-
-    private fun checkPinStatus() {
+    fun syncDeviceAdminState(isAdminActive: Boolean) {
         viewModelScope.launch {
-            val hash = appPreferences.pinHash.first()
-            hasPinConfigured.value = !hash.isNullOrBlank()
+            appPreferences.setDeviceAdminEnabled(isAdminActive)
         }
     }
 
@@ -54,7 +60,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             val salt = PinManager.generateSalt()
             val hash = PinManager.hashPin(pin, salt)
             appPreferences.setPin(hash, salt)
-            hasPinConfigured.value = true
             _message.value = "Security PIN set successfully."
             onComplete()
         }
@@ -67,7 +72,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             if (hash != null && salt != null) {
                 if (PinManager.verifyPin(currentPin, salt, hash)) {
                     appPreferences.setPin(null, null)
-                    hasPinConfigured.value = false
                     _message.value = "Security PIN removed."
                     onComplete()
                 } else {
@@ -90,7 +94,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             appPreferences.setPin(null, null)
             appPreferences.setSafeSearchEnabled(true)
             appPreferences.setFocusMode(false, 0L)
-            hasPinConfigured.value = false
             _message.value = "All custom lists and settings have been reset."
         }
     }

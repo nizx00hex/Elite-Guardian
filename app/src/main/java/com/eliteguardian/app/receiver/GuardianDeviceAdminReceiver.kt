@@ -17,7 +17,16 @@ class GuardianDeviceAdminReceiver : DeviceAdminReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             appPreferences.setDeviceAdminEnabled(true)
         }
-        Toast.makeText(context, "EliteGuardian Tamper Protection Enabled", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Admin Protection Mode Enabled", Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        const val DISABLE_WARNING_MESSAGE =
+            "Disabling Admin Protection Mode removes the extra step required before uninstalling EliteGuardian."
+    }
+
+    override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
+        return DISABLE_WARNING_MESSAGE
     }
 
     override fun onDisabled(context: Context, intent: Intent) {
@@ -26,7 +35,7 @@ class GuardianDeviceAdminReceiver : DeviceAdminReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             appPreferences.setDeviceAdminEnabled(false)
         }
-        Toast.makeText(context, "EliteGuardian Tamper Protection Disabled", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Admin Protection Mode Disabled", Toast.LENGTH_SHORT).show()
     }
 }
 

@@ -39,6 +39,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun refreshAccessibilityStatus(context: Context) {
         _isAccessibilityEnabled.value = AccessibilityUtils.isAccessibilityServiceEnabled(context)
+        // Also ensure device admin preference matches actual system status
+        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+        val adminComponent = android.content.ComponentName(context, com.eliteguardian.app.receiver.GuardianDeviceAdminReceiver::class.java)
+        val isAdmin = dpm.isAdminActive(adminComponent)
+        viewModelScope.launch {
+            appPreferences.setDeviceAdminEnabled(isAdmin)
+        }
     }
 
     fun startProtection(context: Context) {

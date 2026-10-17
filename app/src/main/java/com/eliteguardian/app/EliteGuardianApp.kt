@@ -46,9 +46,18 @@ class EliteGuardianApp : Application() {
                 description = "Alerts regarding focus sessions and filter events"
             }
 
+            val streakChannel = NotificationChannel(
+                "elite_guardian_streak",
+                getString(R.string.streak_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = getString(R.string.streak_channel_desc)
+            }
+
             val manager = getSystemService(NotificationManager::class.java)
             manager?.createNotificationChannel(vpnChannel)
             manager?.createNotificationChannel(alertChannel)
+            manager?.createNotificationChannel(streakChannel)
         }
     }
 

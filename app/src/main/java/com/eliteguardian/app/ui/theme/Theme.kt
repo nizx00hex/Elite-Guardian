@@ -12,7 +12,7 @@ import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryIndigo,
-    onPrimary = TextPrimary,
+    onPrimary = DarkBackground,
     primaryContainer = PrimaryIndigoLight,
     onPrimaryContainer = DarkBackground,
     secondary = SecondaryCyan,

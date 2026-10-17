@@ -26,8 +26,12 @@ import com.eliteguardian.app.ui.focus.FocusViewModel
 import com.eliteguardian.app.ui.keywords.KeywordScreen
 import com.eliteguardian.app.ui.keywords.KeywordViewModel
 import com.eliteguardian.app.ui.onboarding.OnboardingScreen
+import com.eliteguardian.app.ui.search.SearchRestrictionScreen
+import com.eliteguardian.app.ui.search.SearchRestrictionViewModel
 import com.eliteguardian.app.ui.settings.SettingsScreen
 import com.eliteguardian.app.ui.settings.SettingsViewModel
+import com.eliteguardian.app.ui.streak.StreakScreen
+import com.eliteguardian.app.ui.streak.StreakViewModel
 import com.eliteguardian.app.ui.theme.EliteGuardianTheme
 import kotlinx.coroutines.launch
 
@@ -38,6 +42,8 @@ class MainActivity : ComponentActivity() {
     private val appBlockerViewModel: AppBlockerViewModel by viewModels()
     private val keywordViewModel: KeywordViewModel by viewModels()
     private val focusViewModel: FocusViewModel by viewModels()
+    private val streakViewModel: StreakViewModel by viewModels()
+    private val searchRestrictionViewModel: SearchRestrictionViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +90,8 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToAppBlocker = { navController.navigate(Screen.AppBlocker.route) },
                                     onNavigateToKeywordBlocker = { navController.navigate(Screen.KeywordBlocker.route) },
                                     onNavigateToFocus = { navController.navigate(Screen.Focus.route) },
+                                    onNavigateToStreak = { navController.navigate(Screen.Streak.route) },
+                                    onNavigateToSearchRestrictions = { navController.navigate(Screen.SearchRestrictions.route) },
                                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
                                 )
                             }
@@ -111,9 +119,22 @@ class MainActivity : ComponentActivity() {
                                     onNavigateBack = { navController.popBackStack() }
                                 )
                             }
+                            composable(Screen.Streak.route) {
+                                StreakScreen(
+                                    viewModel = streakViewModel,
+                                    onNavigateBack = { navController.popBackStack() }
+                                )
+                            }
+                            composable(Screen.SearchRestrictions.route) {
+                                SearchRestrictionScreen(
+                                    viewModel = searchRestrictionViewModel,
+                                    onNavigateBack = { navController.popBackStack() }
+                                )
+                            }
                             composable(Screen.Settings.route) {
                                 SettingsScreen(
                                     viewModel = settingsViewModel,
+                                    onNavigateToSearchRestrictions = { navController.navigate(Screen.SearchRestrictions.route) },
                                     onNavigateBack = { navController.popBackStack() }
                                 )
                             }

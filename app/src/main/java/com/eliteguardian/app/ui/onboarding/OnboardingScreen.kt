@@ -122,10 +122,13 @@ fun OnboardingScreen(
                             onFinished()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PrimaryIndigo,
+                        contentColor = DarkBackground
+                    ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(if (currentStep == 2) "Get Started" else "Continue")
+                    Text(if (currentStep == 2) "Get Started" else "Continue", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -274,11 +277,12 @@ private fun PermissionsStep(
                     onClick = onRequestVpn,
                     enabled = !isVpnAuthorized,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isVpnAuthorized) ShieldGreen else PrimaryIndigo
+                        containerColor = if (isVpnAuthorized) ShieldGreen else PrimaryIndigo,
+                        contentColor = DarkBackground
                     ),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text(if (isVpnAuthorized) "Authorized ✓" else "Authorize VPN")
+                    Text(if (isVpnAuthorized) "Authorized ✓" else "Authorize VPN", fontWeight = FontWeight.Bold)
                 }
             }
         }
